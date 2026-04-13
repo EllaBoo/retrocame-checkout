@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оформление заказа — Retrocame</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f2f2f2;color:#111;min-height:100vh}
+.wrap{max-width:1020px;margin:0 auto;padding:36px 16px 80px}
+.logo{font-size:22px;font-weight:900;letter-spacing:-1px;margin-bottom:40px;color:#111;display:flex;align-items:center;gap:10px}
+.logo span{font-weight:300;color:#999;font-size:14px;letter-spacing:0}
+.grid{display:grid;grid-template-columns:1fr 400px;gap:28px;align-items:start}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.sum-col{order:-1}}
+.card{background:#fff;border-radius:20px;padding:32px;box-shadow:0 2px 20px rgba(0,0,0,.05);margin-bottom:24px}
+.card:last-child{margin-bottom:0}
+h2{font-size:15px;font-weight:700;margin-bottom:22px;padding-bottom:16px;border-bottom:1.5px solid #f0f0f0;display:flex;align-items:center;gap:10px;color:#111;text-transform:uppercase;letter-spacing:.5px}
+.num{display:inline-flex;width:26px;height:26px;background:#111;color:#fff;border-radius:50%;font-size:11px;font-weight:800;align-items:center;justify-content:center;flex-shrink:0}
+.field{margin-bottom:16px}
+label{display:block;font-size:11px;font-weight:700;color:#aaa;margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px}
+input,select{width:100%;padding:14px 16px;border:1.5px solid #ebebeb;border-radius:12px;font-size:15px;outline:none;background:#fafafa;color:#111;transition:border .15s,background .15s;-webkit-appearance:none;font-family:inherit}
+input:focus,select:focus{border-color:#111;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+input::placeholder{color:#ccc}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{display:block;width:100%;padding:18px;background:#111;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.2px;transition:transform .15s,opacity .15s;margin-top:8px;font-family:inherit}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.item{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f5f5f5;gap:14px}
+.item:last-child{border-bottom:none}
+.item-img{width:52px;height:52px;border-radius:10px;background:#f5f5f5;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:22px}
+.item-info{flex:1}
+.iname{font-size:14px;font-weight:600;line-height:1.4;color:#111}
+.imeta{font-size:12px;color:#bbb;margin-top:3px}
+.iprice{font-size:15px;font-weight:700;white-space:nowrap;color:#111}
+.divider{height:1px;background:#f0f0f0;margin:16px 0}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:14px;color:#999}
+.srow b{color:#111}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0 0;margin-top:12px;border-top:2px solid #111;font-size:22px;font-weight:900;color:#111}
+.badge{background:#f7f7f7;border-radius:12px;padding:12px 16px;font-size:12px;color:#aaa;margin-top:18px;line-height:1.7}
+.req{color:#e53935}
+.err{display:none;color:#c62828;font-size:13px;margin-top:12px;padding:13px 16px;background:#fff5f5;border-radius:12px;border:1px solid #ffcdd2}
+.empty{color:#ccc;font-size:14px;text-align:center;padding:32px 0}
+.success-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#f2f2f2;z-index:999;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:32px}
+.success-overlay.show{display:flex}
+.s-icon{font-size:80px;margin-bottom:24px}
+.s-title{font-size:28px;font-weight:900;margin-bottom:12px;color:#111}
+.s-sub{font-size:16px;color:#999;line-height:1.7;max-width:380px}
+.s-brand{margin-top:32px;font-size:13px;color:#ccc}
+</style>
+</head>
+<body>
+
+<div class="success-overlay" id="success">
+  <div class="s-icon">✅</div>
+  <div class="s-title">Заказ принят!</div>
+  <div class="s-sub">Мы свяжемся с вами в ближайшее время для подтверждения и уточнения деталей доставки.</div>
+  <div class="s-brand">Retrocame 🎞️</div>
+</div>
+
+<div class="wrap">
+  <div class="logo">Retrocame <span>🎞️ Оформление заказа</span></div>
+  <div class="grid">
+    <div class="form-col">
+      <div class="card">
+        <h2><span class="num">1</span>Контактные данные</h2>
+        <div class="field"><label>Имя и фамилия <span class="req">*</span></label><input id="fn" placeholder="Иван Иванов" autocomplete="name"></div>
+        <div class="field"><label>Email <span class="req">*</span></label><input id="fe" type="email" placeholder="ivan@example.com" autocomplete="email"></div>
+        <div class="field"><label>Телефон / WhatsApp <span class="req">*</span></label><input id="fp" type="tel" placeholder="+7 900 000 00 00" autocomplete="tel"></div>
+      </div>
+      <div class="card">
+        <h2><span class="num">2</span>Адрес доставки</h2>
+        <div class="field"><label>Страна</label>
+          <select id="fc" autocomplete="country">
+            <option>Россия</option><option>Казахстан</option><option>Беларусь</option>
+            <option>Армения</option><option>Грузия</option><option>Узбекистан</option><option>Другая</option>
+          </select>
+        </div>
+        <div class="field"><label>Регион / Область <span class="req">*</span></label><input id="freg" placeholder="Московская область" autocomplete="address-level1"></div>
+        <div class="row2">
+          <div class="field"><label>Город <span class="req">*</span></label><input id="fcity" placeholder="Москва" autocomplete="address-level2"></div>
+          <div class="field"><label>Индекс <span class="req">*</span></label><input id="fzip" placeholder="101000" autocomplete="postal-code"></div>
+        </div>
+        <div class="field"><label>Улица, дом, квартира <span class="req">*</span></label><input id="faddr" placeholder="ул. Ленина, д. 1, кв. 1" autocomplete="street-address"></div>
+        <div class="field"><label>Комментарий</label><input id="fcom" placeholder="Пожелания, удобное время..."></div>
+        <div id="ferr" class="err"></div>
+        <button class="btn" id="sbtn" onclick="submitOrder()">Подтвердить заказ →</button>
+      </div>
+    </div>
+    <div class="sum-col">
+      <div class="card">
+        <h2>Ваш заказ</h2>
+        <div id="items-list"></div>
+        <div class="divider"></div>
+        <div class="srow"><span>Товары</span><b id="ss">—</b></div>
+        <div class="srow"><span>Доставка</span><b id="sh">—</b></div>
+        <div class="total-row"><span>Итого</span><span id="st">—</span></div>
+        <div class="badge">📦 Доставка рассчитана по весу заказа.<br>Точные сроки уточним при подтверждении.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var TIERS=[{g:500,p:350},{g:1000,p:450},{g:2000,p:600},{g:5000,p:900},{g:10000,p:1300},{g:99999,p:1800}];
+var cartData=[],totalWeight=0,subtotal=0;
+
+function calcShip(g){for(var i=0;i<TIERS.length;i++){if(g<=TIERS[i].g)return TIERS[i].p;}return TIERS[TIERS.length-1].p;}
+function fmt(n){return Math.round(n).toLocaleString('ru-RU')+' ₽';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+function parseCart(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var d=params.get('d');
+    if(d){
+      return decodeURIComponent(d).split(';;').map(function(item){
+        var p=item.split('|');
+        return{t:p[0]||'',q:parseInt(p[1])||1,p:(parseFloat(p[2])||0)*100,g:parseInt(p[3])||0};
+      });
+    }
+  }catch(e){}
+  return[];
+}
+
+(function init(){
+  cartData=parseCart();
+  var list=document.getElementById('items-list');
+  subtotal=0;totalWeight=0;
+  if(!cartData.length){list.innerHTML='<div class="empty">Корзина пуста</div>';return;}
+  cartData.forEach(function(it){
+    var title=it.t||it.title||'Товар';
+    var qty=parseInt(it.q||it.quantity)||1;
+    var pr=(it.p||it.price||0)/100;
+    var g=parseInt(it.g||it.grams)||0;
+    subtotal+=pr*qty;totalWeight+=g*qty;
+    var d=document.createElement('div');
+    d.className='item';
+    d.innerHTML='<div class="item-img">🎞️</div>'+
+      '<div class="item-info"><div class="iname">'+esc(title)+'</div>'+
+      '<div class="imeta">× '+qty+(g>0?' · '+Math.round(g/10)/100+' кг':'')+
+      (it.v&&it.v!=='Default Title'?' · '+esc(it.v):'')+
+      '</div></div>'+
+      '<div class="iprice">'+fmt(pr*qty)+'</div>';
+    list.appendChild(d);
+  });
+  var s=calcShip(totalWeight);
+  document.getElementById('ss').textContent=fmt(subtotal);
+  document.getElementById('sh').textContent=fmt(s)+(totalWeight>0?' ('+Math.round(totalWeight/100)/10+' кг)':'');
+  document.getElementById('st').textContent=fmt(subtotal+s);
+})();
+
+function submitOrder(){
+  var n=document.getElementById('fn').value.trim();
+  var em=document.getElementById('fe').value.trim();
+  var ph=document.getElementById('fp').value.trim();
+  var reg=document.getElementById('freg').value.trim();
+  var city=document.getElementById('fcity').value.trim();
+  var zip=document.getElementById('fzip').value.trim();
+  var addr=document.getElementById('faddr').value.trim();
+  var country=document.getElementById('fc').value;
+  var com=document.getElementById('fcom').value.trim();
+  var err=document.getElementById('ferr');
+
+  if(!n||!em||!ph||!reg||!city||!zip||!addr){
+    err.style.display='block';err.textContent='Заполните все обязательные поля (*)';return;
+  }
+  if(em.indexOf('@')<0){err.style.display='block';err.textContent='Введите корректный email';return;}
+  err.style.display='none';
+
+  var btn=document.getElementById('sbtn');btn.disabled=true;btn.textContent='Отправляем...';
+
+  var s=calcShip(totalWeight);
+  var prods=cartData.map(function(i){return esc(i.t||i.title||'')+'×'+(i.q||i.quantity||1);}).join('; ');
+
+  fetch('/api/order',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name:n,email:em,phone:ph,country:country,region:reg,city:city,zip:zip,address:addr,
+      products:prods,subtotal:subtotal.toFixed(2),shipping_cost:s.toFixed(2),
+      total:(subtotal+s).toFixed(2),weight:totalWeight,comment:com
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    document.getElementById('success').classList.add('show');
+  })
+  .catch(function(){
+    document.getElementById('success').classList.add('show');
+  });
+}
+</script>
+</body>
+</html>
