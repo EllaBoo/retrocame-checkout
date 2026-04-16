@@ -183,5 +183,17 @@ function submitOrder(){
   });
 }
 </script>
+
+<script>
+// Show success if redirected back from GAS
+(function(){
+  if(window.location.search.indexOf('success=1') > -1){
+    window.addEventListener('DOMContentLoaded', function(){
+      var el = document.getElementById('success');
+      if(el) el.classList.add('show');
+    });
+  }
+})();
+</script>
 </body>
 </html>
