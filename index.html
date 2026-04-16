@@ -174,7 +174,7 @@ function submitOrder(){
   var prods=cartData.map(function(i){return esc(i.t||i.title||'')+'×'+(i.q||i.quantity||1);}).join('; ');
 
   var params='?submit=1&name='+encodeURIComponent(n)+'&email='+encodeURIComponent(em)+'&phone='+encodeURIComponent(ph)+'&country='+encodeURIComponent(country)+'&region='+encodeURIComponent(reg)+'&city='+encodeURIComponent(city)+'&zip='+encodeURIComponent(zip)+'&address='+encodeURIComponent(addr)+'&products='+encodeURIComponent(prods)+'&subtotal='+subtotal.toFixed(2)+'&shipping_cost='+s.toFixed(2)+'&total='+(subtotal+s).toFixed(2)+'&weight='+totalWeight+'&comment='+encodeURIComponent(com);
-  fetch('https://script.google.com/macros/s/AKfycbxs5s9gkYtK1ilM-MleB6qrrv2bg60pmcosYtAPAMOZDA4n4aqd3zU1OsAMD-fHPc9Mog/exec'+params,{mode:'no-cors'})
+  fetch('https://script.google.com/macros/s/AKfycbz9Y_CusRT2byjUgON8gR-Gu8ULLfFrjRa5ZwCCCo4VUV-N-OCTillBi3FJ787H4ucyiw/exec'+params,{mode:'no-cors'})
   .then(function(){
     document.getElementById('success').classList.add('show');
   })
