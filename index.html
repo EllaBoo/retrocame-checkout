@@ -30,15 +30,15 @@ input::placeholder{color:#ccc}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f5f5f5;gap:14px}
 .item:last-child{border-bottom:none}
-.item-img{width:58px;height:58px;border-radius:10px;background:#f0f0f0;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:22px}
-.item-img img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.item-icon{width:40px;height:40px;border-radius:8px;background:#f5f5f5;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
 .item-info{flex:1;min-width:0}
 .iname{font-size:14px;font-weight:600;line-height:1.35;color:#111}
 .imeta{font-size:12px;color:#bbb;margin-top:3px}
 .iprice{font-size:15px;font-weight:700;white-space:nowrap;color:#111;flex-shrink:0}
 .dv{height:1px;background:#f0f0f0;margin:16px 0}
 .sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:14px;color:#999}
-.sr b,.sr span.val{color:#111}
+.sr .v{color:#111}
+.sr .v-gray{color:#888;font-style:italic}
 .tr{display:flex;justify-content:space-between;align-items:center;padding:16px 0 0;margin-top:12px;border-top:2px solid #111;font-size:22px;font-weight:900;color:#111}
 .bg{background:#f7f7f7;border-radius:12px;padding:14px 16px;font-size:12px;color:#888;margin-top:18px;line-height:1.8}
 .req{color:#e53935}
@@ -94,12 +94,10 @@ input::placeholder{color:#ccc}
         <h2>Ваш заказ</h2>
         <div id="il"></div>
         <div class="dv"></div>
-        <div class="sr"><span>Товары</span><span class="val" id="ss">—</span></div>
-        <div class="sr"><span>Доставка</span><span class="val" style="color:#888;font-style:italic" id="sh">Уточняется</span></div>
+        <div class="sr"><span>Товары</span><span class="v" id="ss">—</span></div>
+        <div class="sr"><span>Доставка</span><span class="v-gray">Уточняется</span></div>
         <div class="tr"><span>Итого</span><span id="st">—</span></div>
-        <div class="bg">
-          📦 <b>Стоимость и сроки доставки</b> уточним при подтверждении заказа — свяжемся с вами в течение рабочего дня.
-        </div>
+        <div class="bg">📦 <b>Стоимость и сроки доставки</b> уточним при подтверждении — свяжемся с вами в течение рабочего дня.</div>
       </div>
     </div>
   </div>
@@ -112,61 +110,39 @@ var cartData = [], sub = 0, tw = 0;
 function fm(n){ return Math.round(n).toLocaleString("ru-RU") + " ₽"; }
 function es(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 
-function parseCart(){
-  try {
-    var search = window.location.search;
-    if (!search) return [];
-    var match = search.match(/[?&]d=([^&]*)/);
-    if (!match) return [];
-    var raw = decodeURIComponent(match[1]);
-    if (!raw) return [];
-    return raw.split(";;").map(function(item){
-      // Split only first 4 pipes, rest is image URL
-      var idx = [0,0,0,0];
-      var pos = 0, count = 0;
-      for (var i = 0; i < item.length; i++) {
-        if (item[i] === "|") {
-          idx[count] = i;
-          count++;
-          if (count === 4) break;
-        }
-      }
-      var t = count >= 1 ? item.substring(0, idx[0]) : item;
-      var q = count >= 2 ? parseInt(item.substring(idx[0]+1, idx[1])) || 1 : 1;
-      var p = count >= 3 ? (parseFloat(item.substring(idx[1]+1, idx[2])) || 0) * 100 : 0;
-      var g = count >= 4 ? parseInt(item.substring(idx[2]+1, idx[3])) || 0 : 0;
-      var img = count >= 4 ? item.substring(idx[3]+1) : "";
-      return { t: t, q: q, p: p, g: g, img: img };
-    }).filter(function(it){ return it.t; });
-  } catch(e) { return []; }
-}
-
 (function init(){
-  cartData = parseCart();
+  try {
+    var raw = decodeURIComponent((location.search.match(/[?&]d=([^&]*)/) || [])[1] || "");
+    if (!raw) { showEmpty(); return; }
+    cartData = raw.split(";;").map(function(chunk){
+      // split on first 3 pipes only → [title, qty, price, rest...]
+      var p = chunk.split("|");
+      return {
+        t: p[0] || "",
+        q: parseInt(p[1]) || 1,
+        p: parseFloat(p[2]) || 0,   // price already in rubles (Math.round(shopify_price/100))
+        g: parseInt(p[3]) || 0
+      };
+    }).filter(function(it){ return it.t.length > 0; });
+  } catch(e) { cartData = []; }
+
+  if (!cartData.length) { showEmpty(); return; }
+
   var list = document.getElementById("il");
   sub = 0; tw = 0;
 
-  if (!cartData || !cartData.length) {
-    list.innerHTML = '<div class="empty">Корзина пуста</div>';
-    return;
-  }
-
   cartData.forEach(function(it){
-    var q = parseInt(it.q) || 1;
-    var pr = (it.p || 0) / 100;
-    var g = parseInt(it.g) || 0;
+    var q = it.q;
+    var pr = it.p;   // rubles
+    var g  = it.g;
     sub += pr * q;
-    tw += g * q;
+    tw  += g  * q;
 
     var d = document.createElement("div");
     d.className = "item";
-
-    var imgHtml = it.img
-      ? '<div class="item-img"><img src="' + es(it.img) + '" alt="" onerror="this.parentNode.innerHTML='🎞️'"></div>'
-      : '<div class="item-img">🎞️</div>';
-
-    var wt = g > 0 ? " · " + (Math.round(g / 100) / 10) + " кг" : "";
-    d.innerHTML = imgHtml +
+    var wt = g > 0 ? " · " + (Math.round(g/100)/10) + " кг" : "";
+    d.innerHTML =
+      '<div class="item-icon">🎞️</div>' +
       '<div class="item-info"><div class="iname">' + es(it.t) + '</div>' +
       '<div class="imeta">× ' + q + wt + '</div></div>' +
       '<div class="iprice">' + fm(pr * q) + '</div>';
@@ -177,52 +153,48 @@ function parseCart(){
   document.getElementById("st").textContent = fm(sub) + " + доставка";
 })();
 
+function showEmpty(){
+  document.getElementById("il").innerHTML = '<div class="empty">Корзина пуста</div>';
+}
+
 function sub_(){
-  var n   = document.getElementById("fn").value.trim();
-  var em  = document.getElementById("fe").value.trim();
-  var ph  = document.getElementById("fp").value.trim();
-  var reg = document.getElementById("freg").value.trim();
-  var city= document.getElementById("fcity").value.trim();
-  var zip = document.getElementById("fzip").value.trim();
-  var addr= document.getElementById("faddr").value.trim();
+  var n    = document.getElementById("fn").value.trim();
+  var em   = document.getElementById("fe").value.trim();
+  var ph   = document.getElementById("fp").value.trim();
+  var reg  = document.getElementById("freg").value.trim();
+  var city = document.getElementById("fcity").value.trim();
+  var zip  = document.getElementById("fzip").value.trim();
+  var addr = document.getElementById("faddr").value.trim();
   var country = document.getElementById("fc").value;
-  var com = document.getElementById("fcom").value.trim();
-  var err = document.getElementById("ferr");
+  var com  = document.getElementById("fcom").value.trim();
+  var err  = document.getElementById("ferr");
 
   if (!n||!em||!ph||!reg||!city||!zip||!addr){
-    err.style.display = "block";
-    err.textContent = "Заполните все обязательные поля (*)";
-    return;
+    err.style.display="block"; err.textContent="Заполните все обязательные поля (*)"; return;
   }
-  if (em.indexOf("@") < 0){
-    err.style.display = "block";
-    err.textContent = "Введите корректный email";
-    return;
+  if (em.indexOf("@")<0){
+    err.style.display="block"; err.textContent="Введите корректный email"; return;
   }
-  err.style.display = "none";
+  err.style.display="none";
+  var btn=document.getElementById("sbtn"); btn.disabled=true; btn.textContent="Отправляем...";
 
-  var btn = document.getElementById("sbtn");
-  btn.disabled = true;
-  btn.textContent = "Отправляем...";
-
-  var prods = cartData.map(function(i){ return es(i.t||"") + " ×" + (i.q||1); }).join("; ");
+  var prods = cartData.map(function(i){ return es(i.t)+" ×"+i.q; }).join("; ");
 
   var q = new URLSearchParams({
-    submit: "1", name: n, email: em, phone: ph,
-    country: country, region: reg, city: city, zip: zip, address: addr,
-    products: prods,
+    submit:"1", name:n, email:em, phone:ph,
+    country:country, region:reg, city:city, zip:zip, address:addr,
+    products:prods,
     subtotal: sub.toFixed(2),
     shipping_cost: "0",
     total: sub.toFixed(2),
     weight: String(tw),
     comment: com,
-    return_url: window.location.href.split("?")[0] + "?ok=1"
+    return_url: location.href.split("?")[0] + "?ok=1"
   });
-
-  window.location.href = SU + "?" + q.toString();
+  location.href = SU + "?" + q.toString();
 }
 
-if (window.location.search.indexOf("ok=1") > -1) {
+if (location.search.indexOf("ok=1") > -1) {
   document.addEventListener("DOMContentLoaded", function(){
     document.querySelector(".wrap").innerHTML =
       '<div style="text-align:center;padding:80px 20px">' +
